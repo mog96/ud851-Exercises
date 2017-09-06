@@ -16,10 +16,15 @@
 
 package com.udacity.example.quizexample;
 
+import android.content.ContentResolver;
+import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+
+import com.udacity.example.droidtermsprovider.DroidTermsExampleContract;
 
 /**
  * Gets the data from the ContentProvider and shows a series of flash cards.
@@ -31,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     private int mCurrentState;
 
     // TODO (3) Create an instance variable storing a Cursor called mData
+    private Cursor mData;
+
     private Button mButton;
 
     // This state is when the word definition is hidden and clicking the button will therefore
@@ -95,4 +102,20 @@ public class MainActivity extends AppCompatActivity {
     // provider and return the Cursor object
     // TODO (4) In the onPostExecute method, store the Cursor object in mData
 
+    // I imagine we didn't use an AsyncTaskLoader because we're doing a local operation in the
+    // background, rather than talking to the network.
+    public class WordFetchTask extends AsyncTask<Void, Void, Cursor> {
+
+        @Override
+        protected Cursor doInBackground(Void... voids) {
+            ContentResolver resolver = getContentResolver();
+            return resolver.query(DroidTermsExampleContract.CONTENT_URI, null, null, null, null);
+        }
+
+        @Override
+        protected void onPostExecute(Cursor cursor) {
+            super.onPostExecute(cursor);
+            mData = cursor;
+        }
+    }
 }
