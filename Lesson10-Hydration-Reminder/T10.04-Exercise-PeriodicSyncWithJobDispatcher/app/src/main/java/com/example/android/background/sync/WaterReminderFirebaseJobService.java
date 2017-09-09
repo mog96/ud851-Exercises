@@ -15,7 +15,12 @@
  */
 package com.example.android.background.sync;
 
-public class WaterReminderFirebaseJobService {
+import android.os.AsyncTask;
+
+import com.firebase.jobdispatcher.JobParameters;
+import com.firebase.jobdispatcher.JobService;
+
+public class WaterReminderFirebaseJobService extends JobService {
     // TODO (3) WaterReminderFirebaseJobService should extend from JobService
 
     // TODO (4) Override onStartJob
@@ -36,4 +41,31 @@ public class WaterReminderFirebaseJobService {
         // TODO (12) If mBackgroundTask is valid, cancel it
         // TODO (13) Return true to signify the job should be retried
 
+    private AsyncTask mBackgroundTask;
+
+    @Override
+    public boolean onStartJob(final JobParameters job) {
+        mBackgroundTask = new AsyncTask() {
+            @Override
+            protected Object doInBackground(Object[] objects) {
+                ReminderTasks.executeTask(WaterReminderFirebaseJobService.this, ReminderTasks.ACTION_CHARGING_REMINDER);
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Object o) {
+                jobFinished(job, false);
+            }
+        };
+        mBackgroundTask.execute();
+        return false;
+    }
+
+    @Override
+    public boolean onStopJob(JobParameters job) {
+        if (mBackgroundTask != null) {
+            mBackgroundTask.cancel(true);
+        }
+        return true; // Job should be retried.
+    }
 }
